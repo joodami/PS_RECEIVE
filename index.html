@@ -136,45 +136,45 @@
         }
 
         async function handleLogin() {
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
+    const user = document.getElementById('username').value.trim();
+    const pass = document.getElementById('password').value.trim();
+    const selectedRole = currentUser.role; // บทบาทที่ผู้ใช้กดเลือกจากหน้าแรก
 
-            if(!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบถ้วนค่ะ");
+    if(!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบถ้วนค่ะ");
 
-            showLoader(true);
+    showLoader(true);
 
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    mode: "no-cors", // ใช้ no-cors สำหรับ GAS Web App บางกรณี หรือใช้การรับส่งแบบ JSONP/ปกติ
-                    body: JSON.stringify({
-                        action: "login",
-                        user: user,
-                        pass: pass,
-                        role: currentUser.role
-                    })
-                });
+    try {
+        // ส่งข้อมูลไปที่ GAS
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "login",
+                user: user,
+                pass: pass,
+                role: selectedRole
+            })
+        });
+        
+        const result = await response.json();
 
-                // หมายเหตุ: การใช้ fetch กับ GAS Web App มักจะติดปัญหา Redirect 
-                // แนะนำให้ใช้การรับค่าผ่านฟังก์ชันที่เรียกใช้ปกติ แต่ถ้าบน GitHub แนะนำให้เช็ค Login ผ่านการเรียกจริงดังนี้:
-                
-                // สำหรับขั้นตอนนี้ เพื่อให้ทดสอบได้ทันที ไอติมจะทำระบบจำลองให้ก่อน 
-                // แต่ถ้าคุณเชื่อม Sheet แล้ว ให้ใช้โค้ด fetch ที่ถูกต้องดังนี้ค่ะ:
-                
-                // สมมติว่าผ่าน (สำหรับการทดสอบหน้าบ้าน)
-                if(user !== "" && pass !== "") { 
-                    loginSuccess(user, currentUser.role);
-                } else {
-                    alert("ข้อมูลไม่ถูกต้อง");
-                }
-
-            } catch (err) {
-                console.error(err);
-                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
-            } finally {
-                showLoader(false);
+        if(result.success) {
+            // ถ้าสำเร็จ ต้องเช็คด้วยว่า Role ในฐานข้อมูล ตรงกับที่เลือกมาหรือไม่
+            if(result.role === selectedRole) {
+                loginSuccess(result.name, result.role);
+            } else {
+                alert("คุณไม่มีสิทธิ์เข้าใช้งานในฐานะ: " + selectedRole);
             }
+        } else {
+            alert(result.message); // แจ้งเตือน: ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
         }
+
+    } catch (err) {
+        alert("การเชื่อมต่อผิดพลาด: โปรดตรวจสอบ URL ของ Web App หรือสิทธิ์การเข้าถึง");
+    } finally {
+        showLoader(false);
+    }
+}
 
         function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
