@@ -10,252 +10,167 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
     <style>
-        :root { 
-            --primary: #1a5276; 
-            --accent: #2980b9; 
-            --gold: #f1c40f; 
-            --sidebar-width: 280px;
-        }
+        :root { --primary: #1a5276; --accent: #2980b9; --gold: #f1c40f; --sidebar-width: 280px; }
+        body { font-family: 'Prompt', sans-serif; background-color: #f1f5f9; margin: 0; overflow: hidden; }
 
-        body { 
-            font-family: 'Prompt', sans-serif; 
-            background-color: #f1f5f9; 
-            margin: 0;
-            display: flex;
-            height: 100vh;
-            overflow: hidden;
+        /* --- Landing & Login Layer --- */
+        .auth-container {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(135deg, var(--primary) 0%, #2c3e50 100%);
+            z-index: 2000; display: flex; align-items: center; justify-content: center;
         }
+        .role-card {
+            background: white; padding: 25px; border-radius: 20px; text-align: center;
+            cursor: pointer; transition: 0.3s; border-bottom: 5px solid var(--gold);
+        }
+        .role-card:hover { transform: translateY(-10px); }
+        .role-icon { font-size: 2.5rem; color: var(--primary); }
 
-        /* --- Sidebar Style --- */
+        /* --- Dashboard Layout --- */
+        .wrapper { display: flex; height: 100vh; width: 100%; }
         .sidebar {
-            width: var(--sidebar-width);
-            background: var(--primary);
-            color: white;
-            display: flex;
-            flex-direction: column;
-            transition: all 0.3s;
-            z-index: 1000;
+            width: var(--sidebar-width); background: var(--primary); color: white;
+            display: flex; flex-direction: column; transition: 0.3s;
         }
-
-        .sidebar-header {
-            padding: 20px;
-            text-align: center;
-            background: rgba(0,0,0,0.1);
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .school-logo { height: 60px; margin-bottom: 10px; }
-        .brand-name { font-size: 1.2rem; font-weight: 600; margin: 0; color: var(--gold); }
-
-        .nav-menu {
-            flex: 1;
-            padding: 20px 0;
-            overflow-y: auto;
-        }
-
+        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .nav-menu { flex: 1; padding: 20px 0; }
         .nav-item {
-            padding: 12px 25px;
-            display: flex;
-            align-items: center;
-            color: rgba(255,255,255,0.8);
-            text-decoration: none;
-            transition: 0.2s;
-            border-left: 4px solid transparent;
-            cursor: pointer;
-            margin-bottom: 5px;
+            padding: 12px 25px; display: flex; align-items: center; color: rgba(255,255,255,0.8);
+            text-decoration: none; transition: 0.2s; border-left: 4px solid transparent; cursor: pointer;
         }
+        .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: var(--gold); border-left-color: var(--gold); }
+        .nav-item i { margin-right: 15px; font-size: 1.2rem; }
 
-        .nav-item i { font-size: 1.2rem; margin-right: 15px; }
-        .nav-item:hover {
-            background: rgba(255,255,255,0.1);
-            color: white;
-        }
+        .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+        .top-bar { height: 60px; background: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .content-area { flex: 1; padding: 20px; overflow-y: auto; }
+        .system-card { background: white; border-radius: 15px; border: 1px solid #cbd5e1; padding: 25px; min-height: 80vh; }
+        
+        .view-title { color: var(--primary); border-left: 5px solid var(--gold); padding-left: 15px; margin-bottom: 25px; font-weight: 600; }
+        footer { font-size: 0.75rem; text-align: center; padding: 10px; color: #64748b; background: white; border-top: 1px solid #e2e8f0; }
 
-        .nav-item.active {
-            background: rgba(255,255,255,0.15);
-            color: var(--gold);
-            border-left: 4px solid var(--gold);
-            font-weight: 500;
-        }
-
-        /* --- Main Content --- */
-        .main-wrapper {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            overflow: hidden;
-        }
-
-        .top-bar {
-            background: white;
-            height: 60px;
-            display: flex;
-            align-items: center;
-            padding: 0 25px;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            justify-content: space-between;
-        }
-
-        .content-area {
-            flex: 1;
-            padding: 25px;
-            overflow-y: auto;
-        }
-
-        .system-card {
-            background: #ffffff;
-            border-radius: 14px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.05); 
-            border: 1px solid #cbd5e1;
-            min-height: 400px;
-            padding: 25px;
-        }
-
-        .view-title {
-            color: var(--primary);
-            border-left: 5px solid var(--gold);
-            padding-left: 12px;
-            margin-bottom: 25px;
-            font-weight: 600;
-        }
-
-        /* --- Mobile Toggle --- */
-        #mobile-toggle { display: none; }
-
-        @media (max-width: 992px) {
-            .sidebar {
-                position: fixed;
-                left: -100%;
-                height: 100%;
-            }
-            .sidebar.active { left: 0; }
-            #mobile-toggle { display: block; }
-        }
-
-        footer {
-            font-size: 0.8rem;
-            color: #94a3b8;
-            text-align: center;
-            padding: 15px;
-            background: white;
-        }
+        #main-dashboard { display: none; }
+        #login-form-div { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Sidebar -->
-    <aside class="sidebar" id="sidebar">
-        <div class="sidebar-header">
-            <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" alt="Logo" class="school-logo">
-            <h1 class="brand-name">PS-Sarabun</h1>
-            <small>โรงเรียนพิมานพิทยาสรรค์</small>
+    <!-- 1. หน้าเลือกสิทธิ์การเข้าใช้งาน -->
+    <div id="auth-layer" class="auth-container">
+        <div class="container text-center text-white" id="portal-div">
+            <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="80" class="mb-3">
+            <h3 class="mb-5">ระบบลงทะเบียนรับหนังสือ (PS-Sarabun)</h3>
+            <div class="row g-4 justify-content-center">
+                <div class="col-6 col-md-3"><div class="role-card" onclick="selectRole('สารบรรณ')"><i class="bi bi-person-workspace role-icon"></i><h6 class="text-dark mt-2">งานสารบรรณ</h6></div></div>
+                <div class="col-6 col-md-3"><div class="role-card" onclick="selectRole('ฝ่ายบริหาร')"><i class="bi bi-person-vcard role-icon"></i><h6 class="text-dark mt-2">ฝ่ายบริหาร</h6></div></div>
+                <div class="col-6 col-md-3"><div class="role-card" onclick="selectRole('ครู')"><i class="bi bi-people role-icon"></i><h6 class="text-dark mt-2">ครูและบุคลากร</h6></div></div>
+            </div>
         </div>
-        
-        <nav class="nav-menu">
-            <div class="nav-item active" onclick="switchView('view1', this)">
-                <i class="bi bi-file-earmark-plus"></i>
-                <span>ลงทะเบียนหนังสือใหม่</span>
-            </div>
-            <div class="nav-item" onclick="switchView('view2', this)">
-                <i class="bi bi-journal-text"></i>
-                <span>หนังสือรับทั้งหมด</span>
-            </div>
-            <div class="nav-item" onclick="switchView('view3', this)">
-                <i class="bi bi-reply-all"></i>
-                <span>หนังสือส่งกลับจากบริหาร</span>
-            </div>
-            <div class="nav-item" onclick="switchView('view4', this)">
-                <i class="bi bi-printer"></i>
-                <span>พิมพ์ทะเบียนหนังสือรับ</span>
-            </div>
-        </nav>
 
-        <div class="p-3 text-center border-top border-secondary">
-             <small class="text-white-50">งานยานพาหนะ & สารบรรณ</small>
+        <!-- 2. หน้าฟอร์ม Login -->
+        <div id="login-form-div" class="bg-white p-4 rounded-4 shadow" style="width: 350px;">
+            <h4 class="text-center mb-4" id="role-display">เข้าสู่ระบบ</h4>
+            <div class="mb-3">
+                <label class="form-label">ชื่อผู้ใช้งาน</label>
+                <input type="text" id="username" class="form-control">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">รหัสผ่าน</label>
+                <input type="password" id="password" class="form-control">
+            </div>
+            <button class="btn btn-primary w-100 mb-2" onclick="handleLogin()">เข้าสู่ระบบ</button>
+            <button class="btn btn-light w-100" onclick="resetAuth()">ย้อนกลับ</button>
         </div>
-    </aside>
+    </div>
 
-    <!-- Main Content Area -->
-    <div class="main-wrapper">
-        <header class="top-bar">
-            <button class="btn btn-light" id="mobile-toggle" onclick="toggleSidebar()">
-                <i class="bi bi-list"></i>
-            </button>
-            <div class="d-none d-md-block text-muted">
-                <i class="bi bi-calendar3 me-2"></i> วันที่: <span id="currentDate"></span>
+    <!-- 3. หน้า Dashboard หลัก -->
+    <div id="main-dashboard" class="wrapper">
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="50">
+                <div class="mt-2 fw-bold text-warning">PS-Sarabun</div>
             </div>
-            <div class="user-profile">
-                <span class="badge bg-light text-dark p-2">
-                    <i class="bi bi-person-circle me-1"></i> เจ้าหน้าที่สารบรรณ
-                </span>
+            <nav class="nav-menu" id="side-menu">
+                <!-- เมนูจะเปลี่ยนไปตามสิทธิ์ของผู้ใช้ -->
+            </nav>
+            <div class="p-3 border-top border-secondary text-center">
+                <button class="btn btn-sm btn-outline-light w-100" onclick="location.reload()">ออกจากระบบ</button>
             </div>
-        </header>
+        </aside>
 
-        <main class="content-area">
-            <div class="system-card">
-                <!-- เนื้อหาจะเปลี่ยนไปตามเมนูที่เลือก -->
-                <div id="content-display">
-                    <h4 class="view-title" id="page-title">นำหนังสือรับเข้าแฟ้ม</h4>
-                    <div id="view-body">
-                        <!-- ส่วนนี้จะโหลดฟอร์มหรือตารางจากระบบย่อย -->
-                        <p class="text-muted">กำลังเตรียมเนื้อหาระบบ...</p>
-                    </div>
+        <main class="main-content">
+            <header class="top-bar">
+                <div class="fw-bold text-secondary"><i class="bi bi-calendar-check me-2"></i><span id="date-now"></span></div>
+                <div id="user-info" class="badge bg-primary p-2"></div>
+            </header>
+            <div class="content-area">
+                <div class="system-card">
+                    <h4 class="view-title" id="page-title">ยินดีต้อนรับ</h4>
+                    <div id="view-body">เลือกเมนูทางซ้ายเพื่อเริ่มใช้งาน</div>
                 </div>
             </div>
+            <footer>
+                © 2026 งานยานพาหนะ โรงเรียนพิมานพิทยาสรรค์ | ติดต่อ: นางพิชามญชุ์ ทองกรด
+            </footer>
         </main>
-
-        <footer>
-            © 2026 งานยานพาหนะ โรงเรียนพิมานพิทยาสรรค์ | ติดต่อสอบถาม: นางพิชามญชุ์ ทองกรด
-        </footer>
     </div>
 
     <script>
-        // ฟังก์ชันเปลี่ยนหน้า (View)
-        function switchView(viewId, element) {
-            // ลบ class active จากทุกเมนู
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            // เพิ่ม class active ให้เมนูที่เลือก
-            element.classList.add('active');
+        let currentUser = null;
 
+        function selectRole(role) {
+            document.getElementById('portal-div').style.display = 'none';
+            document.getElementById('login-form-div').style.display = 'block';
+            document.getElementById('role-display').innerText = 'เข้าสู่ระบบ: ' + role;
+            currentUser = { role: role };
+        }
+
+        function resetAuth() {
+            document.getElementById('portal-div').style.display = 'block';
+            document.getElementById('login-form-div').style.display = 'none';
+        }
+
+        function handleLogin() {
+            // ในขั้นตอนนี้เราจะจำลองการเข้าสู่ระบบก่อน (เดี๋ยวเชื่อม GAS ในขั้นต่อไป)
+            document.getElementById('auth-layer').style.display = 'none';
+            document.getElementById('main-dashboard').style.display = 'flex';
+            document.getElementById('user-info').innerText = 'ผู้ใช้งาน: ' + currentUser.role;
+            renderMenu(currentUser.role);
+        }
+
+        function renderMenu(role) {
+            const menu = document.getElementById('side-menu');
+            let html = '';
+            if(role === 'สารบรรณ') {
+                html = `
+                    <div class="nav-item active" onclick="loadPage('reg')"><i class="bi bi-plus-circle"></i><span>นำหนังสือเข้าแฟ้ม</span></div>
+                    <div class="nav-item" onclick="loadPage('all')"><i class="bi bi-list-ul"></i><span>หนังสือรับทั้งหมด</span></div>
+                    <div class="nav-item" onclick="loadPage('ret')"><i class="bi bi-arrow-left-right"></i><span>ส่งกลับจากบริหาร</span></div>
+                    <div class="nav-item" onclick="loadPage('pdf')"><i class="bi bi-filetype-pdf"></i><span>พิมพ์ทะเบียน</span></div>
+                `;
+            } else if(role === 'ฝ่ายบริหาร') {
+                html = `
+                    <div class="nav-item" onclick="loadPage('all')"><i class="bi bi-journal-text"></i><span>หนังสือทั้งหมด</span></div>
+                    <div class="nav-item" onclick="loadPage('sub')"><i class="bi bi-envelope-paper"></i><span>หนังสือจากธุรการ</span></div>
+                `;
+            } else {
+                html = `
+                    <div class="nav-item" onclick="loadPage('new')"><i class="bi bi-inbox"></i><span>หนังสือเข้าใหม่</span></div>
+                    <div class="nav-item" onclick="loadPage('all')"><i class="bi bi-collection"></i><span>หนังสือทั้งหมด</span></div>
+                `;
+            }
+            menu.innerHTML = html;
+        }
+
+        function loadPage(page) {
             const title = document.getElementById('page-title');
             const body = document.getElementById('view-body');
-
-            // อัปเดตเนื้อหาเบื้องต้น (เดี๋ยวเราจะเอาโค้ดระบบมาใส่ใน switch นี้ค่ะ)
-            switch(viewId) {
-                case 'view1':
-                    title.innerText = "นำหนังสือรับเข้าแฟ้ม (ลงทะเบียนใหม่)";
-                    body.innerHTML = "โหลดแบบฟอร์มลงทะเบียน...";
-                    break;
-                case 'view2':
-                    title.innerText = "หนังสือรับที่ลงทะเบียนแล้ว";
-                    body.innerHTML = "โหลดรายการหนังสือทั้งหมด...";
-                    break;
-                case 'view3':
-                    title.innerText = "หนังสือส่งกลับจากฝ่ายบริหาร";
-                    body.innerHTML = "โหลดหนังสือที่รอสารบรรณจัดการต่อ...";
-                    break;
-                case 'view4':
-                    title.innerText = "พิมพ์ทะเบียนหนังสือรับ (PDF)";
-                    body.innerHTML = "ระบบพิมพ์รายงาน...";
-                    break;
-            }
-
-            // ปิด Sidebar อัตโนมัติในมือถือหลังจากกดเลือก
-            if (window.innerWidth <= 992) {
-                toggleSidebar();
-            }
+            // ฟังก์ชันสำหรับเปลี่ยนเนื้อหาในแต่ละหน้า
+            if(page === 'reg') { title.innerText = 'นำหนังสือรับเข้าแฟ้ม'; body.innerHTML = 'ฟอร์มลงทะเบียนกำลังจะมา...'; }
+            // เพิ่มเงื่อนไขหน้าอื่นๆ ตามต้องการ
         }
 
-        // Toggle Sidebar สำหรับมือถือ
-        function toggleSidebar() {
-            document.getElementById('sidebar').classList.toggle('active');
-        }
-
-        // แสดงวันที่ปัจจุบัน
-        const options = { year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('currentDate').innerText = new Date().toLocaleDateString('th-TH', options);
+        document.getElementById('date-now').innerText = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
     </script>
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
