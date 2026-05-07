@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบรับหนังสือ - PS-Sarabun</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+    <style>
+        :root { --primary: #1a5276; --main-gradient: linear-gradient(135deg, #1a5276, #2980b9); }
+        body { font-family: 'Prompt', sans-serif; background: #f0f2f5; padding: 20px; }
+        .card { border-radius: 15px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        .card-header { background: var(--main-gradient); color: white; border-radius: 15px 15px 0 0 !important; }
+        .note-urgent { color: #e74c3c !important; border: 2px solid #e74c3c !important; font-weight: bold; }
+        .stamp-box { border: 2px solid #e74c3c; color: #e74c3c; padding: 10px; width: fit-content; border-radius: 5px; font-size: 0.8rem; line-height: 1.2; background: #fff5f5; }
+    </style>
+</head>
+<body>
+
+<div class="container mb-5">
+    <div class="card mx-auto" style="max-width: 850px;">
+        <div class="card-header py-3 text-center">
+            <h4 class="mb-0">ระบบลงทะเบียนรับหนังสือ - PS-Sarabun</h4>
+        </div>
+        <div class="card-body p-4">
+            <form id="receiveForm">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">1. เลขทะเบียนรับที่</label>
+                        <input type="number" class="form-control" id="receiveNo" required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">2. ที่ (เลขที่หนังสือ)</label>
+                        <input type="text" class="form-control" id="bookNo" placeholder="ศธ ...." required>
+                    </div>
+                    <div class="col-md-4">
+                        <label class="form-label fw-bold">3. ลงวันที่ (ในหนังสือ)</label>
+                        <input type="date" class="form-control" id="bookDate" required>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">4. หนังสือจาก</label>
+                        <input type="text" class="form-control" id="sender" value="สพม.สงขลา สตูล">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">5. เรียน</label>
+                        <input type="text" class="form-control" id="toWhom" value="ผู้อำนวยการโรงเรียนพิมานพิทยาสรรค์">
+                    </div>
+
+                    <div class="col-12">
+                        <label class="form-label fw-bold">6. เรื่อง</label>
+                        <textarea class="form-control" id="subject" rows="2" required></textarea>
+                    </div>
+
+                    <div class="col-md-6">
+                        <label class="form-label fw-bold">8. หมายเหตุ (ความเร่งด่วน)</label>
+                        <select class="form-select" id="note" onchange="checkUrgency()">
+                            <option value="ปกติ">ปกติ</option>
+                            <option value="ด่วน">ด่วน</option>
+                            <option value="ด่วนมาก">ด่วนมาก</option>
+                            <option value="ด่วนที่สุด">ด่วนที่สุด</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-6 text-center">
+                        <label class="form-label fw-bold d-block">9. การประทับตราบนหัวหนังสือ</label>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="printStamp" value="พิมพ์" id="p1" checked onclick="document.getElementById('previewBox').style.display='block'">
+                            <label class="form-check-label" for="p1">พิมพ์</label>
+                        </div>
+                        <div class="form-check form-check-inline">
+                            <input class="form-check-input" type="radio" name="printStamp" value="ไม่พิมพ์" id="p2" onclick="document.getElementById('previewBox').style.display='none'">
+                            <label class="form-check-label" for="p2">ไม่พิมพ์</label>
+                        </div>
+                        <div id="previewBox" class="mt-2 d-flex justify-content-center">
+                            <div class="stamp-box">
+                                <div>โรงเรียนพิมานพิทยาสรรค์</div>
+                                <div id="v_no">รับที่: --</div>
+                                <div id="v_date">วันที่: --/--/----</div>
+                                <div>เวลา: --:-- น.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-12 border-top pt-3">
+                        <label class="form-label fw-bold">7. แนบไฟล์หลัก (PDF เท่านั้น)</label>
+                        <input type="file" class="form-control mb-3" id="mainFile" accept=".pdf" required>
+                        
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <label class="form-label fw-bold mb-0">ไฟล์แนบเพิ่มเติม (สูงสุด 6 ไฟล์)</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addFile()"><i class="bi bi-plus"></i> เพิ่มไฟล์แนบ</button>
+                        </div>
+                        <div id="extraContainer"></div>
+                    </div>
+
+                    <div class="col-12 text-center border-top pt-4">
+                        <button type="button" class="btn btn-light px-4 me-2" onclick="window.location.reload()">ล้างข้อมูล</button>
+                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold" id="btnSubmit">จัดเก็บเอกสารลงแฟ้ม</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // --- ตั้งค่า URL ตรงนี้ค่ะ ---
+    const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfzwm0xQ4guiZt809d855-p1u90VGMEyvYsI3zczEekJR7pupcEVEMkMHj5uSasN-rEw/exec";
+
+    let extraCount = 0;
+
+    // ดึงเลขรับล่าสุดเมื่อเปิดหน้าเว็บ
+    window.onload = async () => {
+        const today = new Date();
+        document.getElementById('v_date').innerText = `วันที่: ${today.toLocaleDateString('th-TH')}`;
+        try {
+            const response = await fetch(`${WEB_APP_URL}?action=getNextNo`);
+            const data = await response.json();
+            document.getElementById('receiveNo').value = data.nextNo;
+            document.getElementById('v_no').innerText = `รับที่: ${data.nextNo}/2569`;
+        } catch (e) { console.error("Error fetching next no", e); }
+    };
+
+    function checkUrgency() {
+        const sub = document.getElementById('subject');
+        (document.getElementById('note').value !== 'ปกติ') ? sub.classList.add('note-urgent') : sub.classList.remove('note-urgent');
+    }
+
+    function addFile() {
+        if (extraCount >= 6) return;
+        extraCount++;
+        const div = document.createElement('div');
+        div.className = 'input-group mb-2';
+        div.innerHTML = `<input type="file" class="form-control extra-in"><button class="btn btn-danger" type="button" onclick="this.parentElement.remove(); extraCount--;">ลบ</button>`;
+        document.getElementById('extraContainer').appendChild(div);
+    }
+
+    document.getElementById('receiveForm').onsubmit = async (e) => {
+        e.preventDefault();
+        const btn = document.getElementById('btnSubmit');
+        btn.disabled = true;
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
+
+        const data = {
+            receiveNo: document.getElementById('receiveNo').value,
+            bookNo: document.getElementById('bookNo').value,
+            bookDate: document.getElementById('bookDate').value,
+            sender: document.getElementById('sender').value,
+            toWhom: document.getElementById('toWhom').value,
+            subject: document.getElementById('subject').value,
+            note: document.getElementById('note').value,
+            printStamp: document.querySelector('input[name="printStamp"]:checked').value,
+            extraFiles: []
+        };
+
+        const mainF = document.getElementById('mainFile').files[0];
+        data.mainFileName = mainF.name;
+        data.mainFile = await toBase64(mainF);
+
+        const extras = document.querySelectorAll('.extra-in');
+        for (let input of extras) {
+            if (input.files[0]) {
+                data.extraFiles.push({
+                    name: input.files[0].name,
+                    type: input.files[0].type,
+                    base64: await toBase64(input.files[0])
+                });
+            }
+        }
+
+        try {
+            const response = await fetch(WEB_APP_URL, {
+                method: 'POST',
+                mode: 'no-cors', // สำคัญ: เพื่อให้ส่งข้ามเว็บได้
+                body: JSON.stringify(data)
+            });
+            
+            // เนื่องจากใช้ no-cors เราจะอ่าน response ไม่ได้ แต่ถ้าไม่มี error แปลว่าส่งสำเร็จ
+            alert('ส่งข้อมูลเรียบร้อยแล้วค่ะ! กรุณารอระบบประมวลผลสักครู่');
+            window.location.reload();
+
+        } catch (error) {
+            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
+            btn.disabled = false;
+            btn.innerHTML = 'จัดเก็บเอกสารลงแฟ้ม';
+        }
+    };
+
+    const toBase64 = f => new Promise((res, rej) => {
+        const r = new FileReader(); r.readAsDataURL(f);
+        r.onload = () => res(r.result.split(',')[1]);
+        r.onerror = e => rej(e);
+    });
+</script>
+</body>
+</html>
