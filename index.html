@@ -171,17 +171,23 @@
             document.getElementById('login-form-div').style.display = 'none';
         }
 
-       async function handleLogin() {
+      async function handleLogin() {
     const userInput = document.getElementById('username').value.trim();
     const passInput = document.getElementById('password').value.trim();
     const selectedRole = currentUser.role;
 
+    // 1. เช็คว่ากรอกข้อมูลครบไหม
     if (!userInput || !passInput) {
-        Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'ต้องใส่ชื่อผู้ใช้งานและรหัสผ่านด้วยนะคะ', confirmButtonColor: '#1a5276' });
+        Swal.fire({ 
+            icon: 'warning', 
+            title: 'ข้อมูลไม่ครบ', 
+            text: 'กรุณากรอกทั้งชื่อผู้ใช้งานและรหัสผ่านนะคะ', 
+            confirmButtonColor: '#1a5276' 
+        });
         return;
     }
 
-    // เตรียมปุ่มสถานะโหลด
+    // 2. แสดงสถานะกำลังโหลด
     const btn = document.getElementById('loginBtn');
     const text = document.getElementById('loginText');
     const spinner = document.getElementById('loginSpinner');
@@ -191,7 +197,6 @@
     spinner.classList.remove('d-none');
 
     try {
-        // ส่งข้อมูลไปที่ GAS
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
             body: JSON.stringify({
@@ -202,45 +207,52 @@
             })
         });
 
+        // ตรวจสอบว่า Response โอเคไหม (เช่น 404 หรือ 500 หรือเปล่า)
+        if (!response.ok) {
+            throw new Error("ติดต่อ Server ไม่ได้ (Status: " + response.status + ")");
+        }
+
         const result = await response.json();
 
+        // 3. กรณี Login สำเร็จ
         if (result.success) {
-            // เช็คว่า Role ตรงกับที่เลือกไหม
+            // เช็ค Role ให้ตรงกับปุ่มที่กดมา
             if (result.role === selectedRole) {
-                // แสดงความยินดีแบบมีเวลาหน่วงให้ผู้ใช้ทราบสถานะ
                 await Swal.fire({
                     icon: 'success',
                     title: 'ยืนยันตัวตนสำเร็จ',
                     text: `ยินดีต้อนรับคุณ ${result.name}`,
-                    timer: 2000, // แสดงค้างไว้ 2 วินาทีให้รู้ว่าเข้าได้แล้ว
+                    timer: 1500,
                     timerProgressBar: true,
                     showConfirmButton: false
                 });
-                
-                // หลังจากแจ้งเตือนเสร็จ ค่อยเปลี่ยนหน้าจอ
                 loginSuccess(result.name, result.role);
             } else {
-                throw new Error("บทบาทผู้ใช้งานไม่ตรงกับที่เลือก");
+                // กรณีรหัสถูก แต่ Role ใน Sheet ไม่ตรงกับปุ่มที่เลือก
+                throw new Error("คุณไม่มีสิทธิ์เข้าใช้งานในบทบาท " + selectedRole);
             }
-        } else {
+        } 
+        // 4. กรณี Login ไม่สำเร็จ (รหัสผิด / ไม่มีชื่อนี้)
+        else {
             throw new Error(result.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
         }
+
     } catch (err) {
         console.error(err);
+        // แจ้งเตือนข้อผิดพลาดทุกประเภท
         Swal.fire({
             icon: 'error',
-            title: 'ไม่สามารถเข้าสู่ระบบได้',
-            text: err.message === "Failed to fetch" ? "ไม่สามารถเชื่อมต่อฐานข้อมูลได้ (โปรดเช็ค URL GAS)" : err.message,
+            title: 'เข้าสู่ระบบไม่สำเร็จ',
+            text: err.message === "Failed to fetch" ? "ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบอินเทอร์เน็ตหรือ URL ของ Web App ค่ะ" : err.message,
             confirmButtonColor: '#d33'
         });
     } finally {
-        // คืนค่าปุ่ม
+        // 5. คืนค่าสถานะปุ่ม ไม่ว่าจะสำเร็จหรือไม่ก็ตาม
         btn.disabled = false;
         text.classList.remove('d-none');
         spinner.classList.add('d-none');
     }
 }
-
         function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'flex';
