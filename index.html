@@ -5,10 +5,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>PS-Sarabun | โรงเรียนพิมานพิทยาสรรค์</title>
 
+    <!-- Google Fonts & Bootstrap -->
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;500;600&display=swap" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
     
+    <!-- SweetAlert2 สำหรับแจ้งเตือนสวยๆ -->
+    <link href="https://cdn.jsdelivr.net/npm/@sweetalert2/theme-bootstrap-4/bootstrap-4.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
     <style>
         :root { --primary: #1a5276; --accent: #2980b9; --gold: #f1c40f; --sidebar-width: 280px; }
         body { font-family: 'Prompt', sans-serif; background-color: #f1f5f9; margin: 0; overflow: hidden; height: 100vh; }
@@ -22,68 +27,91 @@
         .role-card {
             background: white; padding: 25px; border-radius: 20px; text-align: center;
             cursor: pointer; transition: 0.3s; border-bottom: 5px solid var(--gold); height: 100%;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
         }
-        .role-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
-        .role-icon { font-size: 2.5rem; color: var(--primary); }
+        .role-card:hover { transform: translateY(-10px); box-shadow: 0 15px 30px rgba(0,0,0,0.3); }
+        .role-icon { font-size: 2.8rem; color: var(--primary); margin-bottom: 10px; }
 
         /* Dashboard Layout */
         .wrapper { display: none; height: 100vh; width: 100%; }
-        .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; }
-        .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; box-shadow: 2px 0 10px rgba(0,0,0,0.1); }
+        .sidebar-header { padding: 25px 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
         .nav-menu { flex: 1; padding: 20px 0; overflow-y: auto; }
         .nav-item {
-            padding: 12px 25px; display: flex; align-items: center; color: rgba(255,255,255,0.8);
-            text-decoration: none; transition: 0.2s; border-left: 4px solid transparent; cursor: pointer;
+            padding: 14px 25px; display: flex; align-items: center; color: rgba(255,255,255,0.8);
+            text-decoration: none; transition: 0.2s; border-left: 5px solid transparent; cursor: pointer;
+            font-size: 0.95rem;
         }
         .nav-item:hover, .nav-item.active { background: rgba(255,255,255,0.1); color: var(--gold); border-left-color: var(--gold); }
         .nav-item i { margin-right: 15px; font-size: 1.2rem; }
 
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-        .top-bar { height: 60px; background: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+        .top-bar { height: 65px; background: white; display: flex; align-items: center; padding: 0 25px; justify-content: space-between; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
         .content-area { flex: 1; padding: 25px; overflow-y: auto; }
-        .system-card { background: white; border-radius: 15px; border: 1px solid #cbd5e1; padding: 30px; min-height: 80%; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
+        .system-card { background: white; border-radius: 15px; border: 1px solid #cbd5e1; padding: 35px; min-height: 80%; box-shadow: 0 5px 20px rgba(0,0,0,0.05); }
         
-        .view-title { color: var(--primary); border-left: 5px solid var(--gold); padding-left: 15px; margin-bottom: 25px; font-weight: 600; }
-        
-        #loader { 
-            display: none; position: fixed; top:0; left:0; width:100%; height:100%; 
-            background: rgba(255,255,255,0.8); z-index: 3000; justify-content: center; align-items: center; flex-direction: column;
-        }
+        .view-title { color: var(--primary); border-left: 6px solid var(--gold); padding-left: 18px; margin-bottom: 30px; font-weight: 600; font-size: 1.4rem; }
+        footer { font-size: 0.8rem; text-align: center; padding: 12px; color: #64748b; background: white; border-top: 1px solid #e2e8f0; }
+
+        /* Loader inside button */
+        .spinner-border-sm { width: 1.2rem; height: 1.2rem; border-width: 0.2em; }
     </style>
 </head>
 <body>
-
-    <div id="loader">
-        <div class="spinner-border text-primary mb-2"></div>
-        <div>กำลังดำเนินการ...</div>
-    </div>
 
     <!-- 1. ส่วนเลือกบทบาทและ Login -->
     <div id="auth-layer" class="auth-container">
         <!-- หน้าเลือกปุ่ม -->
         <div class="container text-center text-white" id="portal-div">
-            <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="80" class="mb-3">
-            <h3 class="mb-5">ระบบลงทะเบียนรับหนังสือ (PS-Sarabun)</h3>
+            <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="90" class="mb-4">
+            <h2 class="mb-5 fw-bold">ระบบลงทะเบียนรับหนังสือ (PS-Sarabun)</h2>
             <div class="row g-4 justify-content-center">
-                <div class="col-6 col-md-3"><div class="role-card" onclick="selectRole('สารบรรณ')"><i class="bi bi-person-workspace role-icon"></i><h6 class="text-dark mt-2">งานสารบรรณ</h6></div></div>
-                <div class="col-6 col-md-3"><div class="role-card" onclick="selectRole('ฝ่ายบริหาร')"><i class="bi bi-person-vcard role-icon"></i><h6 class="text-dark mt-2">ฝ่ายบริหาร</h6></div></div>
-                <div class="col-6 col-md-3"><div class="role-card" onclick="selectRole('ครู')"><i class="bi bi-people role-icon"></i><h6 class="text-dark mt-2">ครูและบุคลากร</h6></div></div>
+                <div class="col-6 col-md-3">
+                    <div class="role-card" onclick="selectRole('สารบรรณ')">
+                        <i class="bi bi-person-workspace role-icon"></i>
+                        <h5 class="text-dark fw-bold">งานสารบรรณ</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="role-card" onclick="selectRole('ฝ่ายบริหาร')">
+                        <i class="bi bi-person-vcard role-icon"></i>
+                        <h5 class="text-dark fw-bold">ฝ่ายบริหาร</h5>
+                    </div>
+                </div>
+                <div class="col-6 col-md-3">
+                    <div class="role-card" onclick="selectRole('ครู')">
+                        <i class="bi bi-people role-icon"></i>
+                        <h5 class="text-dark fw-bold">ครูและบุคลากร</h5>
+                    </div>
+                </div>
             </div>
         </div>
 
         <!-- หน้าฟอร์ม Login -->
-        <div id="login-form-div" class="bg-white p-4 rounded-4 shadow" style="width: 350px; display: none;">
-            <h4 class="text-center mb-4" id="role-display">เข้าสู่ระบบ</h4>
-            <div class="mb-3">
-                <label class="form-label">ชื่อผู้ใช้งาน</label>
-                <input type="text" id="username" class="form-control" placeholder="Username">
+        <div id="login-form-div" class="bg-white p-5 rounded-4 shadow-lg" style="width: 400px; display: none;">
+            <div class="text-center mb-4">
+                <i class="bi bi-shield-lock-fill text-primary" style="font-size: 3rem;"></i>
+                <h4 class="fw-bold mt-2" id="role-display">เข้าสู่ระบบ</h4>
             </div>
             <div class="mb-3">
-                <label class="form-label">รหัสผ่าน</label>
-                <input type="password" id="password" class="form-control" placeholder="Password">
+                <label class="form-label fw-bold">ชื่อผู้ใช้งาน</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-person"></i></span>
+                    <input type="text" id="username" class="form-control" placeholder="Username">
+                </div>
             </div>
-            <button class="btn btn-primary w-100 mb-2" onclick="handleLogin()">เข้าสู่ระบบ</button>
-            <button class="btn btn-light w-100" onclick="resetAuth()">ย้อนกลับ</button>
+            <div class="mb-4">
+                <label class="form-label fw-bold">รหัสผ่าน</label>
+                <div class="input-group">
+                    <span class="input-group-text"><i class="bi bi-key"></i></span>
+                    <input type="password" id="password" class="form-control" placeholder="Password">
+                </div>
+            </div>
+            <button class="btn btn-primary w-100 py-2 fw-bold mb-2" id="loginBtn" onclick="handleLogin()">
+                <span id="loginText">เข้าสู่ระบบ</span>
+                <span id="loginSpinner" class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </button>
+            <button class="btn btn-outline-secondary w-100 py-2" id="backBtn" onclick="resetAuth()">ย้อนกลับ</button>
         </div>
     </div>
 
@@ -91,34 +119,41 @@
     <div id="main-dashboard" class="wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
-                <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="50">
-                <div class="mt-2 fw-bold text-warning">PS-Sarabun</div>
+                <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="60">
+                <div class="mt-3 fw-bold text-warning h5">PS-Sarabun</div>
+                <div class="small opacity-75">โรงเรียนพิมานพิทยาสรรค์</div>
             </div>
             <nav class="nav-menu" id="side-menu"></nav>
             <div class="p-3 border-top border-secondary text-center">
-                <button class="btn btn-sm btn-outline-light w-100" onclick="location.reload()">ออกจากระบบ</button>
+                <button class="btn btn-sm btn-danger w-100 py-2" onclick="location.reload()">
+                    <i class="bi bi-box-arrow-left me-2"></i>ออกจากระบบ
+                </button>
             </div>
         </aside>
 
         <main class="main-content">
             <header class="top-bar">
-                <div class="fw-bold text-secondary"><i class="bi bi-calendar3 me-2"></i><span id="date-now"></span></div>
-                <div id="user-info" class="badge bg-primary p-2"></div>
+                <div class="fw-bold text-secondary">
+                    <i class="bi bi-calendar3-event me-2 text-primary"></i> วันที่: <span id="date-now"></span>
+                </div>
+                <div id="user-info" class="badge bg-primary px-3 py-2 fs-6"></div>
             </header>
             <div class="content-area">
                 <div class="system-card">
                     <h4 class="view-title" id="page-title">ยินดีต้อนรับ</h4>
-                    <div id="view-body">กรุณาเลือกเมนูเพื่อเริ่มต้นการทำงานค่ะ</div>
+                    <div id="view-body" class="fs-5 text-muted">
+                        กรุณาเลือกเมนูทางด้านซ้ายเพื่อเริ่มดำเนินการจัดการหนังสือค่ะ
+                    </div>
                 </div>
             </div>
-            <footer class="text-center p-2 border-top bg-white small text-muted">
+            <footer>
                 © 2026 งานยานพาหนะ โรงเรียนพิมานพิทยาสรรค์ | ติดต่อ: นางพิชามญชุ์ ทองกรด
             </footer>
         </main>
     </div>
 
     <script>
-        // *** สำคัญ: นำ URL ของ Web App จาก GAS มาวางที่นี่ค่ะ ***
+        // *** สำคัญ: นำ URL ของ Web App จาก GAS มาวางที่นี่ ***
         const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRzwNfvPx9_lDv7OdZ9ZBYFVVdHc8ccM_Cl19JGX2YUN3bMK3bEa9Ms2a75AzBF1VgMg/exec";
 
         let currentUser = { role: "" };
@@ -136,50 +171,70 @@
         }
 
         async function handleLogin() {
-    const user = document.getElementById('username').value.trim();
-    const pass = document.getElementById('password').value.trim();
-    const selectedRole = currentUser.role; // บทบาทที่ผู้ใช้กดเลือกจากหน้าแรก
+            const userInput = document.getElementById('username').value.trim();
+            const passInput = document.getElementById('password').value.trim();
+            const selectedRole = currentUser.role;
 
-    if(!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบถ้วนค่ะ");
-
-    showLoader(true);
-
-    try {
-        // ส่งข้อมูลไปที่ GAS
-        const response = await fetch(WEB_APP_URL, {
-            method: "POST",
-            body: JSON.stringify({
-                action: "login",
-                user: user,
-                pass: pass,
-                role: selectedRole
-            })
-        });
-        
-        const result = await response.json();
-
-        if(result.success) {
-            // ถ้าสำเร็จ ต้องเช็คด้วยว่า Role ในฐานข้อมูล ตรงกับที่เลือกมาหรือไม่
-            if(result.role === selectedRole) {
-                loginSuccess(result.name, result.role);
-            } else {
-                alert("คุณไม่มีสิทธิ์เข้าใช้งานในฐานะ: " + selectedRole);
+            if (!userInput || !passInput) {
+                Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'ต้องใส่ชื่อผู้ใช้งานและรหัสผ่านด้วยนะคะ', confirmButtonColor: '#1a5276' });
+                return;
             }
-        } else {
-            alert(result.message); // แจ้งเตือน: ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง
-        }
 
-    } catch (err) {
-        alert("การเชื่อมต่อผิดพลาด: โปรดตรวจสอบ URL ของ Web App หรือสิทธิ์การเข้าถึง");
-    } finally {
-        showLoader(false);
-    }
-}
+            // แสดงสถานะการโหลดในปุ่ม
+            const btn = document.getElementById('loginBtn');
+            const text = document.getElementById('loginText');
+            const spinner = document.getElementById('loginSpinner');
+            const backBtn = document.getElementById('backBtn');
+            
+            btn.disabled = true;
+            backBtn.disabled = true;
+            text.classList.add('d-none');
+            spinner.classList.remove('d-none');
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    body: JSON.stringify({
+                        action: "login",
+                        user: userInput,
+                        pass: passInput,
+                        role: selectedRole
+                    })
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    if (result.role === selectedRole) {
+                        Swal.fire({
+                            icon: 'success',
+                            title: 'สำเร็จ!',
+                            text: 'ยินดีต้อนรับคุณ ' + result.name,
+                            timer: 1500,
+                            showConfirmButton: false
+                        }).then(() => {
+                            loginSuccess(result.name, result.role);
+                        });
+                    } else {
+                        throw new Error("คุณไม่มีสิทธิ์เข้าใช้งานในฐานะ " + selectedRole);
+                    }
+                } else {
+                    throw new Error(result.message);
+                }
+            } catch (err) {
+                Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: err.message || "การเชื่อมต่อฐานข้อมูลขัดข้อง", confirmButtonColor: '#d33' });
+            } finally {
+                btn.disabled = false;
+                backBtn.disabled = false;
+                text.classList.remove('d-none');
+                spinner.classList.add('d-none');
+            }
+        }
 
         function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'flex';
-            document.getElementById('user-info').innerText = 'ผู้ใช้งาน: ' + name + ' (' + role + ')';
+            document.getElementById('user-info').innerHTML = `<i class="bi bi-person-circle me-2"></i> ${name} (${role})`;
             renderMenu(role);
         }
 
@@ -188,18 +243,18 @@
             let html = '';
             if(role === 'สารบรรณ') {
                 html = `
-                    <div class="nav-item active" onclick="loadView('reg', this)"><i class="bi bi-plus-circle"></i><span>นำหนังสือเข้าแฟ้ม</span></div>
-                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-list-ul"></i><span>หนังสือรับทั้งหมด</span></div>
-                    <div class="nav-item" onclick="loadView('ret', this)"><i class="bi bi-arrow-left-right"></i><span>ส่งกลับจากบริหาร</span></div>
-                    <div class="nav-item" onclick="loadView('pdf', this)"><i class="bi bi-filetype-pdf"></i><span>พิมพ์ทะเบียน</span></div>`;
+                    <div class="nav-item active" onclick="loadView('reg', this)"><i class="bi bi-file-earmark-plus"></i><span>นำหนังสือเข้าแฟ้ม</span></div>
+                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-collection"></i><span>หนังสือรับทั้งหมด</span></div>
+                    <div class="nav-item" onclick="loadView('ret', this)"><i class="bi bi-reply-all"></i><span>ส่งกลับจากบริหาร</span></div>
+                    <div class="nav-item" onclick="loadView('pdf', this)"><i class="bi bi-printer"></i><span>พิมพ์ทะเบียนหนังสือ</span></div>`;
             } else if(role === 'ฝ่ายบริหาร') {
                 html = `
                     <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-journal-text"></i><span>หนังสือทั้งหมด</span></div>
-                    <div class="nav-item" onclick="loadView('sub', this)"><i class="bi bi-envelope-paper"></i><span>หนังสือจากธุรการ</span></div>`;
+                    <div class="nav-item" onclick="loadView('sub', this)"><i class="bi bi-envelope-check"></i><span>หนังสือจากธุรการ</span></div>`;
             } else {
                 html = `
                     <div class="nav-item" onclick="loadView('new', this)"><i class="bi bi-inbox"></i><span>หนังสือเข้าใหม่</span></div>
-                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-collection"></i><span>หนังสือทั้งหมด</span></div>`;
+                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-journals"></i><span>หนังสือทั้งหมด</span></div>`;
             }
             menu.innerHTML = html;
         }
@@ -212,20 +267,16 @@
             const body = document.getElementById('view-body');
 
             const views = {
-                'reg': { t: 'นำหนังสือรับเข้าแฟ้ม (ลงทะเบียนใหม่)', b: 'ฟอร์มลงทะเบียนพร้อมระบบอัปโหลด PDF...' },
-                'all': { t: 'หนังสือรับทั้งหมด', b: 'ตารางแสดงรายการหนังสือในระบบ...' },
-                'ret': { t: 'หนังสือส่งกลับจากฝ่ายบริหาร', b: 'รายการหนังสือที่ ผอ. เกษียณแล้ว...' },
-                'pdf': { t: 'พิมพ์ทะเบียนหนังสือรับ', b: 'เลือกช่วงวันที่เพื่อออกรายงาน PDF...' },
-                'sub': { t: 'หนังสือจากธุรการ', b: 'รายการหนังสือที่รอฝ่ายบริหารพิจารณา...' },
-                'new': { t: 'หนังสือเข้าใหม่', b: 'รายการหนังสือที่คุณได้รับมอบหมาย...' }
+                'reg': { t: 'นำหนังสือรับเข้าแฟ้ม (ลงทะเบียนใหม่)', b: 'กำลังเตรียมฟอร์มลงทะเบียนพร้อมระบบอัปโหลดไฟล์...' },
+                'all': { t: 'หนังสือรับทั้งหมดในระบบ', b: 'กำลังโหลดตารางข้อมูลหนังสือ...' },
+                'ret': { t: 'หนังสือส่งกลับจากฝ่ายบริหาร', b: 'รายการหนังสือที่ ผอ. พิจารณาเรียบร้อยแล้ว...' },
+                'pdf': { t: 'พิมพ์ทะเบียนหนังสือรับ', b: 'ระบบสร้างรายงานในรูปแบบ PDF...' },
+                'sub': { t: 'หนังสือจากธุรการ (รอพิจารณา)', b: 'รายการหนังสือที่รอฝ่ายบริหารลงความเห็น...' },
+                'new': { t: 'หนังสือเข้าใหม่สำหรับคุณ', b: 'รายการหนังสือที่คุณได้รับมอบหมายโดยตรง...' }
             };
 
             title.innerText = views[view].t;
-            body.innerHTML = '<p class="text-muted">' + views[view].b + '</p>';
-        }
-
-        function showLoader(show) {
-            document.getElementById('loader').style.display = show ? 'flex' : 'none';
+            body.innerHTML = `<div class="p-5 text-center"><div class="spinner-border text-primary"></div><p class="mt-3">${views[view].b}</p></div>`;
         }
 
         document.getElementById('date-now').innerText = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
