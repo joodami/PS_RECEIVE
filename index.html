@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>ระบบรับหนังสือ - PS-Sarabun</title>
+    <!-- CSS: Bootstrap & Google Fonts -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@300;400;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
@@ -13,7 +14,10 @@
         .card { border-radius: 15px; border: none; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
         .card-header { background: var(--main-gradient); color: white; border-radius: 15px 15px 0 0 !important; }
         .note-urgent { color: #e74c3c !important; border: 2px solid #e74c3c !important; font-weight: bold; }
-        .stamp-box { border: 2px solid #e74c3c; color: #e74c3c; padding: 10px; width: fit-content; border-radius: 5px; font-size: 0.8rem; line-height: 1.2; background: #fff5f5; }
+        .stamp-box { border: 2px solid #e74c3c; color: #e74c3c; padding: 10px; width: fit-content; border-radius: 5px; font-size: 0.8rem; line-height: 1.2; background: #fff5f5; margin: 0 auto; }
+        .form-label { color: #34495e; margin-top: 5px; }
+        .btn-primary { background: var(--primary); border: none; }
+        .btn-primary:hover { background: #154360; }
     </style>
 </head>
 <body>
@@ -21,14 +25,15 @@
 <div class="container mb-5">
     <div class="card mx-auto" style="max-width: 850px;">
         <div class="card-header py-3 text-center">
-            <h4 class="mb-0">ระบบลงทะเบียนรับหนังสือ - PS-Sarabun</h4>
+            <h4 class="mb-0"><i class="bi bi-file-earmark-arrow-down-fill"></i> ระบบลงทะเบียนรับหนังสือ - PS-Sarabun</h4>
         </div>
         <div class="card-body p-4">
             <form id="receiveForm">
                 <div class="row g-3">
+                    <!-- ส่วนเลขรับและวันที่ -->
                     <div class="col-md-4">
                         <label class="form-label fw-bold">1. เลขทะเบียนรับที่</label>
-                        <input type="number" class="form-control" id="receiveNo" required>
+                        <input type="number" class="form-control" id="receiveNo" required readonly>
                     </div>
                     <div class="col-md-4">
                         <label class="form-label fw-bold">2. ที่ (เลขที่หนังสือ)</label>
@@ -39,6 +44,7 @@
                         <input type="date" class="form-control" id="bookDate" required>
                     </div>
 
+                    <!-- รายละเอียดผู้ส่ง/ผู้รับ -->
                     <div class="col-md-6">
                         <label class="form-label fw-bold">4. หนังสือจาก</label>
                         <input type="text" class="form-control" id="sender" value="สพม.สงขลา สตูล">
@@ -48,11 +54,13 @@
                         <input type="text" class="form-control" id="toWhom" value="ผู้อำนวยการโรงเรียนพิมานพิทยาสรรค์">
                     </div>
 
+                    <!-- เรื่อง -->
                     <div class="col-12">
                         <label class="form-label fw-bold">6. เรื่อง</label>
-                        <textarea class="form-control" id="subject" rows="2" required></textarea>
+                        <textarea class="form-control" id="subject" rows="2" placeholder="กรอกชื่อเรื่องหนังสือ..." required></textarea>
                     </div>
 
+                    <!-- ความเร่งด่วนและตัวอย่างตรายาง -->
                     <div class="col-md-6">
                         <label class="form-label fw-bold">8. หมายเหตุ (ความเร่งด่วน)</label>
                         <select class="form-select" id="note" onchange="checkUrgency()">
@@ -73,30 +81,34 @@
                             <input class="form-check-input" type="radio" name="printStamp" value="ไม่พิมพ์" id="p2" onclick="document.getElementById('previewBox').style.display='none'">
                             <label class="form-check-label" for="p2">ไม่พิมพ์</label>
                         </div>
-                        <div id="previewBox" class="mt-2 d-flex justify-content-center">
+                        <div id="previewBox" class="mt-2">
                             <div class="stamp-box">
                                 <div>โรงเรียนพิมานพิทยาสรรค์</div>
-                                <div id="v_no">รับที่: --</div>
+                                <div id="v_no">รับที่: กำลังโหลด...</div>
                                 <div id="v_date">วันที่: --/--/----</div>
                                 <div>เวลา: --:-- น.</div>
                             </div>
                         </div>
                     </div>
 
+                    <!-- การแนบไฟล์ -->
                     <div class="col-12 border-top pt-3">
-                        <label class="form-label fw-bold">7. แนบไฟล์หลัก (PDF เท่านั้น)</label>
+                        <label class="form-label fw-bold text-primary">7. แนบไฟล์หลัก (PDF เท่านั้น - จะถูกประทับตรา)</label>
                         <input type="file" class="form-control mb-3" id="mainFile" accept=".pdf" required>
                         
                         <div class="d-flex justify-content-between align-items-center mb-2">
-                            <label class="form-label fw-bold mb-0">ไฟล์แนบเพิ่มเติม (สูงสุด 6 ไฟล์)</label>
-                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addFile()"><i class="bi bi-plus"></i> เพิ่มไฟล์แนบ</button>
+                            <label class="form-label fw-bold mb-0">ไฟล์แนบเพิ่มเติม (ถ้ามี)</label>
+                            <button type="button" class="btn btn-sm btn-outline-secondary" onclick="addFile()"><i class="bi bi-plus-circle"></i> เพิ่มช่องแนบไฟล์</button>
                         </div>
                         <div id="extraContainer"></div>
                     </div>
 
+                    <!-- ปุ่มควบคุม -->
                     <div class="col-12 text-center border-top pt-4">
-                        <button type="button" class="btn btn-light px-4 me-2" onclick="window.location.reload()">ล้างข้อมูล</button>
-                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold" id="btnSubmit">จัดเก็บเอกสารลงแฟ้ม</button>
+                        <button type="button" class="btn btn-light px-4 me-2 border" onclick="window.location.reload()">ล้างข้อมูล</button>
+                        <button type="submit" class="btn btn-primary px-5 py-2 fw-bold" id="btnSubmit">
+                            <i class="bi bi-cloud-arrow-up-fill"></i> จัดเก็บเอกสารลงแฟ้ม
+                        </button>
                     </div>
                 </div>
             </form>
@@ -105,93 +117,118 @@
 </div>
 
 <script>
-    // --- ตั้งค่า URL ตรงนี้ค่ะ ---
+    /** --- [การตั้งค่าสำคัญ] --- **/
     const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzfzwm0xQ4guiZt809d855-p1u90VGMEyvYsI3zczEekJR7pupcEVEMkMHj5uSasN-rEw/exec";
 
     let extraCount = 0;
 
-    // ดึงเลขรับล่าสุดเมื่อเปิดหน้าเว็บ
-    window.onload = async () => {
+    // 1. ดึงเลขรับล่าสุด (ใช้เทคนิค JSONP เพื่อเลี่ยงการติด CORS)
+    window.onload = () => {
         const today = new Date();
         document.getElementById('v_date').innerText = `วันที่: ${today.toLocaleDateString('th-TH')}`;
-        try {
-            const response = await fetch(`${WEB_APP_URL}?action=getNextNo`);
-            const data = await response.json();
-            document.getElementById('receiveNo').value = data.nextNo;
-            document.getElementById('v_no').innerText = `รับที่: ${data.nextNo}/2569`;
-        } catch (e) { console.error("Error fetching next no", e); }
+        
+        // สร้าง Script Tag เพื่อไปดึงข้อมูลจาก GAS
+        const script = document.createElement('script');
+        script.src = `${WEB_APP_URL}?action=getNextNo&callback=setupForm`;
+        document.body.appendChild(script);
     };
 
-    function checkUrgency() {
-        const sub = document.getElementById('subject');
-        (document.getElementById('note').value !== 'ปกติ') ? sub.classList.add('note-urgent') : sub.classList.remove('note-urgent');
+    // Callback function เมื่อดึงเลขรับสำเร็จ
+    function setupForm(data) {
+        document.getElementById('receiveNo').value = data.nextNo;
+        document.getElementById('v_no').innerText = `รับที่: ${data.nextNo}/2569`;
     }
 
+    // ฟังก์ชันเช็คความด่วนเพื่อเปลี่ยนสีตัวอักษร
+    function checkUrgency() {
+        const sub = document.getElementById('subject');
+        const note = document.getElementById('note').value;
+        (note !== 'ปกติ') ? sub.classList.add('note-urgent') : sub.classList.remove('note-urgent');
+    }
+
+    // ฟังก์ชันเพิ่มช่องแนบไฟล์พิเศษ
     function addFile() {
-        if (extraCount >= 6) return;
+        if (extraCount >= 6) return alert('แนบไฟล์เพิ่มได้สูงสุด 6 ไฟล์ค่ะ');
         extraCount++;
         const div = document.createElement('div');
-        div.className = 'input-group mb-2';
-        div.innerHTML = `<input type="file" class="form-control extra-in"><button class="btn btn-danger" type="button" onclick="this.parentElement.remove(); extraCount--;">ลบ</button>`;
+        div.className = 'input-group mb-2 animate__animated animate__fadeIn';
+        div.innerHTML = `
+            <input type="file" class="form-control extra-in">
+            <button class="btn btn-danger" type="button" onclick="this.parentElement.remove(); extraCount--;">ลบ</button>
+        `;
         document.getElementById('extraContainer').appendChild(div);
     }
 
+    // 2. ฟังก์ชันหลักเมื่อกดปุ่ม Submit
     document.getElementById('receiveForm').onsubmit = async (e) => {
         e.preventDefault();
         const btn = document.getElementById('btnSubmit');
+        
+        if (!confirm('ยืนยันการบันทึกข้อมูลและประทับตราหนังสือใช่หรือไม่?')) return;
+
         btn.disabled = true;
-        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
-
-        const data = {
-            receiveNo: document.getElementById('receiveNo').value,
-            bookNo: document.getElementById('bookNo').value,
-            bookDate: document.getElementById('bookDate').value,
-            sender: document.getElementById('sender').value,
-            toWhom: document.getElementById('toWhom').value,
-            subject: document.getElementById('subject').value,
-            note: document.getElementById('note').value,
-            printStamp: document.querySelector('input[name="printStamp"]:checked').value,
-            extraFiles: []
-        };
-
-        const mainF = document.getElementById('mainFile').files[0];
-        data.mainFileName = mainF.name;
-        data.mainFile = await toBase64(mainF);
-
-        const extras = document.querySelectorAll('.extra-in');
-        for (let input of extras) {
-            if (input.files[0]) {
-                data.extraFiles.push({
-                    name: input.files[0].name,
-                    type: input.files[0].type,
-                    base64: await toBase64(input.files[0])
-                });
-            }
-        }
+        btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังประมวลผล PDF...';
 
         try {
-            const response = await fetch(WEB_APP_URL, {
+            const data = {
+                receiveNo: document.getElementById('receiveNo').value,
+                bookNo: document.getElementById('bookNo').value,
+                bookDate: document.getElementById('bookDate').value,
+                sender: document.getElementById('sender').value,
+                toWhom: document.getElementById('toWhom').value,
+                subject: document.getElementById('subject').value,
+                note: document.getElementById('note').value,
+                printStamp: document.querySelector('input[name="printStamp"]:checked').value,
+                extraFiles: []
+            };
+
+            // แปลงไฟล์หลักเป็น Base64
+            const mainF = document.getElementById('mainFile').files[0];
+            data.mainFileName = mainF.name;
+            data.mainFile = await toBase64(mainF);
+
+            // แปลงไฟล์แนบอื่นๆ
+            const extras = document.querySelectorAll('.extra-in');
+            for (let input of extras) {
+                if (input.files[0]) {
+                    data.extraFiles.push({
+                        name: input.files[0].name,
+                        type: input.files[0].type,
+                        base64: await toBase64(input.files[0])
+                    });
+                }
+            }
+
+            // ส่งข้อมูลไปยัง GAS ด้วย Fetch API (Mode: no-cors เพื่อให้ทะลุผ่าน GitHub ได้)
+            await fetch(WEB_APP_URL, {
                 method: 'POST',
-                mode: 'no-cors', // สำคัญ: เพื่อให้ส่งข้ามเว็บได้
+                mode: 'no-cors',
                 body: JSON.stringify(data)
             });
             
-            // เนื่องจากใช้ no-cors เราจะอ่าน response ไม่ได้ แต่ถ้าไม่มี error แปลว่าส่งสำเร็จ
-            alert('ส่งข้อมูลเรียบร้อยแล้วค่ะ! กรุณารอระบบประมวลผลสักครู่');
+            // เนื่องจากใช้ no-cors เราจะอ่าน Response กลับมาไม่ได้ 
+            // แต่ถ้าฟังก์ชันจบที่นี่โดยไม่มี Error แสดงว่าส่งข้อมูลสำเร็จแล้ว
+            alert('🎉 บันทึกข้อมูลเรียบร้อยแล้วค่ะ!\nระบบกำลังประทับตราลงไฟล์และลงทะเบียนใน Google Sheets กรุณารอ 2-3 วินาทีแล้วตรวจสอบผลที่ไฟล์ Sheets นะคะ');
             window.location.reload();
 
         } catch (error) {
-            alert('เกิดข้อผิดพลาดในการเชื่อมต่อ: ' + error.message);
+            console.error(error);
+            alert('❌ เกิดข้อผิดพลาด: ' + error.message);
             btn.disabled = false;
-            btn.innerHTML = 'จัดเก็บเอกสารลงแฟ้ม';
+            btn.innerHTML = '<i class="bi bi-cloud-arrow-up-fill"></i> จัดเก็บเอกสารลงแฟ้ม';
         }
     };
 
+    // Helper: ฟังก์ชันแปลงไฟล์เป็น Base64
     const toBase64 = f => new Promise((res, rej) => {
-        const r = new FileReader(); r.readAsDataURL(f);
+        const r = new FileReader(); 
+        r.readAsDataURL(f);
         r.onload = () => res(r.result.split(',')[1]);
         r.onerror = e => rej(e);
     });
 </script>
+
+<!-- Script: Bootstrap Bundle -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
