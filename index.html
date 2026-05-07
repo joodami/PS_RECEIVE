@@ -11,9 +11,9 @@
     
     <style>
         :root { --primary: #1a5276; --accent: #2980b9; --gold: #f1c40f; --sidebar-width: 280px; }
-        body { font-family: 'Prompt', sans-serif; background-color: #f1f5f9; margin: 0; overflow: hidden; }
+        body { font-family: 'Prompt', sans-serif; background-color: #f1f5f9; margin: 0; overflow: hidden; height: 100vh; }
 
-        /* --- Landing & Login Layer --- */
+        /* Auth Screen */
         .auth-container {
             position: fixed; top: 0; left: 0; width: 100%; height: 100%;
             background: linear-gradient(135deg, var(--primary) 0%, #2c3e50 100%);
@@ -21,19 +21,16 @@
         }
         .role-card {
             background: white; padding: 25px; border-radius: 20px; text-align: center;
-            cursor: pointer; transition: 0.3s; border-bottom: 5px solid var(--gold);
+            cursor: pointer; transition: 0.3s; border-bottom: 5px solid var(--gold); height: 100%;
         }
-        .role-card:hover { transform: translateY(-10px); }
+        .role-card:hover { transform: translateY(-10px); box-shadow: 0 10px 20px rgba(0,0,0,0.3); }
         .role-icon { font-size: 2.5rem; color: var(--primary); }
 
-        /* --- Dashboard Layout --- */
-        .wrapper { display: flex; height: 100vh; width: 100%; }
-        .sidebar {
-            width: var(--sidebar-width); background: var(--primary); color: white;
-            display: flex; flex-direction: column; transition: 0.3s;
-        }
+        /* Dashboard Layout */
+        .wrapper { display: none; height: 100vh; width: 100%; }
+        .sidebar { width: var(--sidebar-width); background: var(--primary); color: white; display: flex; flex-direction: column; }
         .sidebar-header { padding: 20px; text-align: center; border-bottom: 1px solid rgba(255,255,255,0.1); }
-        .nav-menu { flex: 1; padding: 20px 0; }
+        .nav-menu { flex: 1; padding: 20px 0; overflow-y: auto; }
         .nav-item {
             padding: 12px 25px; display: flex; align-items: center; color: rgba(255,255,255,0.8);
             text-decoration: none; transition: 0.2s; border-left: 4px solid transparent; cursor: pointer;
@@ -43,20 +40,27 @@
 
         .main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
         .top-bar { height: 60px; background: white; display: flex; align-items: center; padding: 0 20px; justify-content: space-between; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
-        .content-area { flex: 1; padding: 20px; overflow-y: auto; }
-        .system-card { background: white; border-radius: 15px; border: 1px solid #cbd5e1; padding: 25px; min-height: 80vh; }
+        .content-area { flex: 1; padding: 25px; overflow-y: auto; }
+        .system-card { background: white; border-radius: 15px; border: 1px solid #cbd5e1; padding: 30px; min-height: 80%; box-shadow: 0 5px 15px rgba(0,0,0,0.05); }
         
         .view-title { color: var(--primary); border-left: 5px solid var(--gold); padding-left: 15px; margin-bottom: 25px; font-weight: 600; }
-        footer { font-size: 0.75rem; text-align: center; padding: 10px; color: #64748b; background: white; border-top: 1px solid #e2e8f0; }
-
-        #main-dashboard { display: none; }
-        #login-form-div { display: none; }
+        
+        #loader { 
+            display: none; position: fixed; top:0; left:0; width:100%; height:100%; 
+            background: rgba(255,255,255,0.8); z-index: 3000; justify-content: center; align-items: center; flex-direction: column;
+        }
     </style>
 </head>
 <body>
 
-    <!-- 1. หน้าเลือกสิทธิ์การเข้าใช้งาน -->
+    <div id="loader">
+        <div class="spinner-border text-primary mb-2"></div>
+        <div>กำลังดำเนินการ...</div>
+    </div>
+
+    <!-- 1. ส่วนเลือกบทบาทและ Login -->
     <div id="auth-layer" class="auth-container">
+        <!-- หน้าเลือกปุ่ม -->
         <div class="container text-center text-white" id="portal-div">
             <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="80" class="mb-3">
             <h3 class="mb-5">ระบบลงทะเบียนรับหนังสือ (PS-Sarabun)</h3>
@@ -67,32 +71,30 @@
             </div>
         </div>
 
-        <!-- 2. หน้าฟอร์ม Login -->
-        <div id="login-form-div" class="bg-white p-4 rounded-4 shadow" style="width: 350px;">
+        <!-- หน้าฟอร์ม Login -->
+        <div id="login-form-div" class="bg-white p-4 rounded-4 shadow" style="width: 350px; display: none;">
             <h4 class="text-center mb-4" id="role-display">เข้าสู่ระบบ</h4>
             <div class="mb-3">
                 <label class="form-label">ชื่อผู้ใช้งาน</label>
-                <input type="text" id="username" class="form-control">
+                <input type="text" id="username" class="form-control" placeholder="Username">
             </div>
             <div class="mb-3">
                 <label class="form-label">รหัสผ่าน</label>
-                <input type="password" id="password" class="form-control">
+                <input type="password" id="password" class="form-control" placeholder="Password">
             </div>
             <button class="btn btn-primary w-100 mb-2" onclick="handleLogin()">เข้าสู่ระบบ</button>
             <button class="btn btn-light w-100" onclick="resetAuth()">ย้อนกลับ</button>
         </div>
     </div>
 
-    <!-- 3. หน้า Dashboard หลัก -->
+    <!-- 2. ส่วน Dashboard -->
     <div id="main-dashboard" class="wrapper">
         <aside class="sidebar">
             <div class="sidebar-header">
                 <img src="https://raw.githubusercontent.com/joodami/school-assets/main/logo.png" height="50">
                 <div class="mt-2 fw-bold text-warning">PS-Sarabun</div>
             </div>
-            <nav class="nav-menu" id="side-menu">
-                <!-- เมนูจะเปลี่ยนไปตามสิทธิ์ของผู้ใช้ -->
-            </nav>
+            <nav class="nav-menu" id="side-menu"></nav>
             <div class="p-3 border-top border-secondary text-center">
                 <button class="btn btn-sm btn-outline-light w-100" onclick="location.reload()">ออกจากระบบ</button>
             </div>
@@ -100,29 +102,32 @@
 
         <main class="main-content">
             <header class="top-bar">
-                <div class="fw-bold text-secondary"><i class="bi bi-calendar-check me-2"></i><span id="date-now"></span></div>
+                <div class="fw-bold text-secondary"><i class="bi bi-calendar3 me-2"></i><span id="date-now"></span></div>
                 <div id="user-info" class="badge bg-primary p-2"></div>
             </header>
             <div class="content-area">
                 <div class="system-card">
                     <h4 class="view-title" id="page-title">ยินดีต้อนรับ</h4>
-                    <div id="view-body">เลือกเมนูทางซ้ายเพื่อเริ่มใช้งาน</div>
+                    <div id="view-body">กรุณาเลือกเมนูเพื่อเริ่มต้นการทำงานค่ะ</div>
                 </div>
             </div>
-            <footer>
+            <footer class="text-center p-2 border-top bg-white small text-muted">
                 © 2026 งานยานพาหนะ โรงเรียนพิมานพิทยาสรรค์ | ติดต่อ: นางพิชามญชุ์ ทองกรด
             </footer>
         </main>
     </div>
 
     <script>
-        let currentUser = null;
+        // *** สำคัญ: นำ URL ของ Web App จาก GAS มาวางที่นี่ค่ะ ***
+        const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyRzwNfvPx9_lDv7OdZ9ZBYFVVdHc8ccM_Cl19JGX2YUN3bMK3bEa9Ms2a75AzBF1VgMg/exec";
+
+        let currentUser = { role: "" };
 
         function selectRole(role) {
+            currentUser.role = role;
             document.getElementById('portal-div').style.display = 'none';
             document.getElementById('login-form-div').style.display = 'block';
             document.getElementById('role-display').innerText = 'เข้าสู่ระบบ: ' + role;
-            currentUser = { role: role };
         }
 
         function resetAuth() {
@@ -130,12 +135,52 @@
             document.getElementById('login-form-div').style.display = 'none';
         }
 
-        function handleLogin() {
-            // ในขั้นตอนนี้เราจะจำลองการเข้าสู่ระบบก่อน (เดี๋ยวเชื่อม GAS ในขั้นต่อไป)
+        async function handleLogin() {
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+
+            if(!user || !pass) return alert("กรุณากรอกข้อมูลให้ครบถ้วนค่ะ");
+
+            showLoader(true);
+
+            try {
+                const response = await fetch(WEB_APP_URL, {
+                    method: "POST",
+                    mode: "no-cors", // ใช้ no-cors สำหรับ GAS Web App บางกรณี หรือใช้การรับส่งแบบ JSONP/ปกติ
+                    body: JSON.stringify({
+                        action: "login",
+                        user: user,
+                        pass: pass,
+                        role: currentUser.role
+                    })
+                });
+
+                // หมายเหตุ: การใช้ fetch กับ GAS Web App มักจะติดปัญหา Redirect 
+                // แนะนำให้ใช้การรับค่าผ่านฟังก์ชันที่เรียกใช้ปกติ แต่ถ้าบน GitHub แนะนำให้เช็ค Login ผ่านการเรียกจริงดังนี้:
+                
+                // สำหรับขั้นตอนนี้ เพื่อให้ทดสอบได้ทันที ไอติมจะทำระบบจำลองให้ก่อน 
+                // แต่ถ้าคุณเชื่อม Sheet แล้ว ให้ใช้โค้ด fetch ที่ถูกต้องดังนี้ค่ะ:
+                
+                // สมมติว่าผ่าน (สำหรับการทดสอบหน้าบ้าน)
+                if(user !== "" && pass !== "") { 
+                    loginSuccess(user, currentUser.role);
+                } else {
+                    alert("ข้อมูลไม่ถูกต้อง");
+                }
+
+            } catch (err) {
+                console.error(err);
+                alert("เกิดข้อผิดพลาดในการเชื่อมต่อ");
+            } finally {
+                showLoader(false);
+            }
+        }
+
+        function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'flex';
-            document.getElementById('user-info').innerText = 'ผู้ใช้งาน: ' + currentUser.role;
-            renderMenu(currentUser.role);
+            document.getElementById('user-info').innerText = 'ผู้ใช้งาน: ' + name + ' (' + role + ')';
+            renderMenu(role);
         }
 
         function renderMenu(role) {
@@ -143,31 +188,44 @@
             let html = '';
             if(role === 'สารบรรณ') {
                 html = `
-                    <div class="nav-item active" onclick="loadPage('reg')"><i class="bi bi-plus-circle"></i><span>นำหนังสือเข้าแฟ้ม</span></div>
-                    <div class="nav-item" onclick="loadPage('all')"><i class="bi bi-list-ul"></i><span>หนังสือรับทั้งหมด</span></div>
-                    <div class="nav-item" onclick="loadPage('ret')"><i class="bi bi-arrow-left-right"></i><span>ส่งกลับจากบริหาร</span></div>
-                    <div class="nav-item" onclick="loadPage('pdf')"><i class="bi bi-filetype-pdf"></i><span>พิมพ์ทะเบียน</span></div>
-                `;
+                    <div class="nav-item active" onclick="loadView('reg', this)"><i class="bi bi-plus-circle"></i><span>นำหนังสือเข้าแฟ้ม</span></div>
+                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-list-ul"></i><span>หนังสือรับทั้งหมด</span></div>
+                    <div class="nav-item" onclick="loadView('ret', this)"><i class="bi bi-arrow-left-right"></i><span>ส่งกลับจากบริหาร</span></div>
+                    <div class="nav-item" onclick="loadView('pdf', this)"><i class="bi bi-filetype-pdf"></i><span>พิมพ์ทะเบียน</span></div>`;
             } else if(role === 'ฝ่ายบริหาร') {
                 html = `
-                    <div class="nav-item" onclick="loadPage('all')"><i class="bi bi-journal-text"></i><span>หนังสือทั้งหมด</span></div>
-                    <div class="nav-item" onclick="loadPage('sub')"><i class="bi bi-envelope-paper"></i><span>หนังสือจากธุรการ</span></div>
-                `;
+                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-journal-text"></i><span>หนังสือทั้งหมด</span></div>
+                    <div class="nav-item" onclick="loadView('sub', this)"><i class="bi bi-envelope-paper"></i><span>หนังสือจากธุรการ</span></div>`;
             } else {
                 html = `
-                    <div class="nav-item" onclick="loadPage('new')"><i class="bi bi-inbox"></i><span>หนังสือเข้าใหม่</span></div>
-                    <div class="nav-item" onclick="loadPage('all')"><i class="bi bi-collection"></i><span>หนังสือทั้งหมด</span></div>
-                `;
+                    <div class="nav-item" onclick="loadView('new', this)"><i class="bi bi-inbox"></i><span>หนังสือเข้าใหม่</span></div>
+                    <div class="nav-item" onclick="loadView('all', this)"><i class="bi bi-collection"></i><span>หนังสือทั้งหมด</span></div>`;
             }
             menu.innerHTML = html;
         }
 
-        function loadPage(page) {
+        function loadView(view, el) {
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            el.classList.add('active');
+            
             const title = document.getElementById('page-title');
             const body = document.getElementById('view-body');
-            // ฟังก์ชันสำหรับเปลี่ยนเนื้อหาในแต่ละหน้า
-            if(page === 'reg') { title.innerText = 'นำหนังสือรับเข้าแฟ้ม'; body.innerHTML = 'ฟอร์มลงทะเบียนกำลังจะมา...'; }
-            // เพิ่มเงื่อนไขหน้าอื่นๆ ตามต้องการ
+
+            const views = {
+                'reg': { t: 'นำหนังสือรับเข้าแฟ้ม (ลงทะเบียนใหม่)', b: 'ฟอร์มลงทะเบียนพร้อมระบบอัปโหลด PDF...' },
+                'all': { t: 'หนังสือรับทั้งหมด', b: 'ตารางแสดงรายการหนังสือในระบบ...' },
+                'ret': { t: 'หนังสือส่งกลับจากฝ่ายบริหาร', b: 'รายการหนังสือที่ ผอ. เกษียณแล้ว...' },
+                'pdf': { t: 'พิมพ์ทะเบียนหนังสือรับ', b: 'เลือกช่วงวันที่เพื่อออกรายงาน PDF...' },
+                'sub': { t: 'หนังสือจากธุรการ', b: 'รายการหนังสือที่รอฝ่ายบริหารพิจารณา...' },
+                'new': { t: 'หนังสือเข้าใหม่', b: 'รายการหนังสือที่คุณได้รับมอบหมาย...' }
+            };
+
+            title.innerText = views[view].t;
+            body.innerHTML = '<p class="text-muted">' + views[view].b + '</p>';
+        }
+
+        function showLoader(show) {
+            document.getElementById('loader').style.display = show ? 'flex' : 'none';
         }
 
         document.getElementById('date-now').innerText = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
