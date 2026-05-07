@@ -171,34 +171,26 @@
             document.getElementById('login-form-div').style.display = 'none';
         }
 
-      async function handleLogin() {
+   async function handleLogin() {
     const userInput = document.getElementById('username').value.trim();
     const passInput = document.getElementById('password').value.trim();
     const selectedRole = currentUser.role;
 
-    // 1. เช็คว่ากรอกข้อมูลครบไหม
     if (!userInput || !passInput) {
-        Swal.fire({ 
-            icon: 'warning', 
-            title: 'ข้อมูลไม่ครบ', 
-            text: 'กรุณากรอกทั้งชื่อผู้ใช้งานและรหัสผ่านนะคะ', 
-            confirmButtonColor: '#1a5276' 
-        });
+        Swal.fire('กรุณากรอกข้อมูล', 'ต้องระบุทั้งชื่อผู้ใช้และรหัสผ่านค่ะ', 'warning');
         return;
     }
 
-    // 2. แสดงสถานะกำลังโหลด
+    // แสดงสถานะการโหลด
     const btn = document.getElementById('loginBtn');
-    const text = document.getElementById('loginText');
-    const spinner = document.getElementById('loginSpinner');
-    
     btn.disabled = true;
-    text.classList.add('d-none');
-    spinner.classList.remove('d-none');
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังเข้าสู่ระบบ...';
 
     try {
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
+            mode: "cors", // เพิ่มตรงนี้
+            headers: { "Content-Type": "text/plain;charset=utf-8" }, // แก้เป็น text/plain เพื่อเลี่ยง CORS เบื้องต้น
             body: JSON.stringify({
                 action: "login",
                 user: userInput,
@@ -207,52 +199,31 @@
             })
         });
 
-        // ตรวจสอบว่า Response โอเคไหม (เช่น 404 หรือ 500 หรือเปล่า)
-        if (!response.ok) {
-            throw new Error("ติดต่อ Server ไม่ได้ (Status: " + response.status + ")");
-        }
-
         const result = await response.json();
 
-        // 3. กรณี Login สำเร็จ
         if (result.success) {
-            // เช็ค Role ให้ตรงกับปุ่มที่กดมา
-            if (result.role === selectedRole) {
-                await Swal.fire({
-                    icon: 'success',
-                    title: 'ยืนยันตัวตนสำเร็จ',
-                    text: `ยินดีต้อนรับคุณ ${result.name}`,
-                    timer: 1500,
-                    timerProgressBar: true,
-                    showConfirmButton: false
-                });
+            Swal.fire({
+                icon: 'success',
+                title: 'สำเร็จ',
+                text: 'ยินดีต้อนรับคุณ ' + result.name,
+                timer: 1500,
+                showConfirmButton: false
+            }).then(() => {
                 loginSuccess(result.name, result.role);
-            } else {
-                // กรณีรหัสถูก แต่ Role ใน Sheet ไม่ตรงกับปุ่มที่เลือก
-                throw new Error("คุณไม่มีสิทธิ์เข้าใช้งานในบทบาท " + selectedRole);
-            }
-        } 
-        // 4. กรณี Login ไม่สำเร็จ (รหัสผิด / ไม่มีชื่อนี้)
-        else {
-            throw new Error(result.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
+            });
+        } else {
+            Swal.fire('ล้มเหลว', result.message || 'รหัสผ่านไม่ถูกต้อง', 'error');
         }
 
     } catch (err) {
         console.error(err);
-        // แจ้งเตือนข้อผิดพลาดทุกประเภท
-        Swal.fire({
-            icon: 'error',
-            title: 'เข้าสู่ระบบไม่สำเร็จ',
-            text: err.message === "Failed to fetch" ? "ไม่สามารถเชื่อมต่อฐานข้อมูลได้ กรุณาตรวจสอบอินเทอร์เน็ตหรือ URL ของ Web App ค่ะ" : err.message,
-            confirmButtonColor: '#d33'
-        });
+        Swal.fire('เกิดข้อผิดพลาด', 'ไม่สามารถเชื่อมต่อ Server ได้ หรือ Web App URL ไม่ถูกต้อง', 'error');
     } finally {
-        // 5. คืนค่าสถานะปุ่ม ไม่ว่าจะสำเร็จหรือไม่ก็ตาม
         btn.disabled = false;
-        text.classList.remove('d-none');
-        spinner.classList.add('d-none');
+        btn.innerHTML = 'เข้าสู่ระบบ';
     }
 }
+        
         function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
             document.getElementById('main-dashboard').style.display = 'flex';
