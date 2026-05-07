@@ -155,46 +155,70 @@
             document.getElementById('login-form-div').style.display = 'none';
         }
 
-        async function handleLogin(event) {
-            if (event) event.preventDefault();
+       async function handleLogin(event) {
+    if (event) {
+        event.preventDefault();
+        event.stopPropagation();
+    }
 
-            const userInput = document.getElementById('username').value.trim();
-            const passInput = document.getElementById('password').value.trim();
-            const btn = document.getElementById('loginBtn');
-            const spinner = document.getElementById('loginSpinner');
-            const text = document.getElementById('loginText');
+    const userInput = document.getElementById('username').value.trim();
+    const passInput = document.getElementById('password').value.trim();
+    const btn = document.getElementById('loginBtn');
+    const spinner = document.getElementById('loginSpinner');
+    const text = document.getElementById('loginText');
 
-            btn.disabled = true;
-            text.classList.add('d-none');
-            spinner.classList.remove('d-none');
+    if (!userInput || !passInput) {
+        Swal.fire('กรุณากรอกข้อมูล', 'ระบุชื่อผู้ใช้และรหัสผ่านให้ครบถ้วน', 'warning');
+        return;
+    }
 
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    body: JSON.stringify({
-                        action: "login",
-                        user: userInput,
-                        pass: passInput,
-                        role: currentUser.role
-                    })
-                });
+    btn.disabled = true;
+    text.classList.add('d-none');
+    spinner.classList.remove('d-none');
 
-                const result = await response.json();
+    try {
+        // --- ปรับการส่งข้อมูลเป็นรูปแบบ URLSearchParams (เหมือนการส่ง Form ปกติ) ---
+        const params = new URLSearchParams();
+        params.append('action', 'login');
+        params.append('user', userInput);
+        params.append('pass', passInput);
+        params.append('role', currentUser.role);
 
-                if (result.success) {
-                    Swal.fire({ icon: 'success', title: 'สำเร็จ', text: 'ยินดีต้อนรับคุณ ' + result.name, timer: 1500, showConfirmButton: false });
-                    loginSuccess(result.name, result.role);
-                } else {
-                    Swal.fire('ล้มเหลว', result.message, 'error');
-                }
-            } catch (err) {
-                Swal.fire('Error', 'ไม่สามารถติดต่อ Server ได้ กรุณาเช็คการ Deploy หรือ URL ค่ะ', 'error');
-            } finally {
-                btn.disabled = false;
-                text.classList.remove('d-none');
-                spinner.classList.add('d-none');
-            }
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            mode: "cors", // เปิดโหมดข้ามโดเมน
+            headers: {
+                "Content-Type": "application/x-www-form-urlencoded", // แจ้ง GAS ว่านี่คือฟอร์มนะ
+            },
+            body: params.toString()
+        });
+
+        if (!response.ok) throw new Error('Network response was not ok (404/500)');
+
+        const result = await response.json();
+
+        if (result.success) {
+            Swal.fire({ 
+                icon: 'success', 
+                title: 'สำเร็จ', 
+                text: 'ยินดีต้อนรับคุณ ' + result.name, 
+                timer: 1500, 
+                showConfirmButton: false 
+            }).then(() => {
+                loginSuccess(result.name, result.role);
+            });
+        } else {
+            Swal.fire('ล้มเหลว', result.message || 'ข้อมูลไม่ถูกต้อง', 'error');
         }
+    } catch (err) {
+        console.error("Fetch Error Details:", err);
+        Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Server ได้ (404 Not Found) <br><br> กรุณาเช็ค WEB_APP_URL ในโค้ดว่าตรงกับลิงก์ /exec ล่าสุดหรือไม่', 'error');
+    } finally {
+        btn.disabled = false;
+        text.classList.remove('d-none');
+        spinner.classList.add('d-none');
+    }
+}
 
         function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
