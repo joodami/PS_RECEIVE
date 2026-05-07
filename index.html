@@ -170,66 +170,75 @@
             document.getElementById('login-form-div').style.display = 'none';
         }
 
-        async function handleLogin() {
-            const userInput = document.getElementById('username').value.trim();
-            const passInput = document.getElementById('password').value.trim();
-            const selectedRole = currentUser.role;
+       async function handleLogin() {
+    const userInput = document.getElementById('username').value.trim();
+    const passInput = document.getElementById('password').value.trim();
+    const selectedRole = currentUser.role;
 
-            if (!userInput || !passInput) {
-                Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'ต้องใส่ชื่อผู้ใช้งานและรหัสผ่านด้วยนะคะ', confirmButtonColor: '#1a5276' });
-                return;
-            }
+    if (!userInput || !passInput) {
+        Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'ต้องใส่ชื่อผู้ใช้งานและรหัสผ่านด้วยนะคะ', confirmButtonColor: '#1a5276' });
+        return;
+    }
 
-            // แสดงสถานะการโหลดในปุ่ม
-            const btn = document.getElementById('loginBtn');
-            const text = document.getElementById('loginText');
-            const spinner = document.getElementById('loginSpinner');
-            const backBtn = document.getElementById('backBtn');
-            
-            btn.disabled = true;
-            backBtn.disabled = true;
-            text.classList.add('d-none');
-            spinner.classList.remove('d-none');
+    // เตรียมปุ่มสถานะโหลด
+    const btn = document.getElementById('loginBtn');
+    const text = document.getElementById('loginText');
+    const spinner = document.getElementById('loginSpinner');
+    
+    btn.disabled = true;
+    text.classList.add('d-none');
+    spinner.classList.remove('d-none');
 
-            try {
-                const response = await fetch(WEB_APP_URL, {
-                    method: "POST",
-                    body: JSON.stringify({
-                        action: "login",
-                        user: userInput,
-                        pass: passInput,
-                        role: selectedRole
-                    })
+    try {
+        // ส่งข้อมูลไปที่ GAS
+        const response = await fetch(WEB_APP_URL, {
+            method: "POST",
+            body: JSON.stringify({
+                action: "login",
+                user: userInput,
+                pass: passInput,
+                role: selectedRole
+            })
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+            // เช็คว่า Role ตรงกับที่เลือกไหม
+            if (result.role === selectedRole) {
+                // แสดงความยินดีแบบมีเวลาหน่วงให้ผู้ใช้ทราบสถานะ
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'ยืนยันตัวตนสำเร็จ',
+                    text: `ยินดีต้อนรับคุณ ${result.name}`,
+                    timer: 2000, // แสดงค้างไว้ 2 วินาทีให้รู้ว่าเข้าได้แล้ว
+                    timerProgressBar: true,
+                    showConfirmButton: false
                 });
-
-                const result = await response.json();
-
-                if (result.success) {
-                    if (result.role === selectedRole) {
-                        Swal.fire({
-                            icon: 'success',
-                            title: 'สำเร็จ!',
-                            text: 'ยินดีต้อนรับคุณ ' + result.name,
-                            timer: 1500,
-                            showConfirmButton: false
-                        }).then(() => {
-                            loginSuccess(result.name, result.role);
-                        });
-                    } else {
-                        throw new Error("คุณไม่มีสิทธิ์เข้าใช้งานในฐานะ " + selectedRole);
-                    }
-                } else {
-                    throw new Error(result.message);
-                }
-            } catch (err) {
-                Swal.fire({ icon: 'error', title: 'เข้าสู่ระบบไม่สำเร็จ', text: err.message || "การเชื่อมต่อฐานข้อมูลขัดข้อง", confirmButtonColor: '#d33' });
-            } finally {
-                btn.disabled = false;
-                backBtn.disabled = false;
-                text.classList.remove('d-none');
-                spinner.classList.add('d-none');
+                
+                // หลังจากแจ้งเตือนเสร็จ ค่อยเปลี่ยนหน้าจอ
+                loginSuccess(result.name, result.role);
+            } else {
+                throw new Error("บทบาทผู้ใช้งานไม่ตรงกับที่เลือก");
             }
+        } else {
+            throw new Error(result.message || "ชื่อผู้ใช้หรือรหัสผ่านไม่ถูกต้อง");
         }
+    } catch (err) {
+        console.error(err);
+        Swal.fire({
+            icon: 'error',
+            title: 'ไม่สามารถเข้าสู่ระบบได้',
+            text: err.message === "Failed to fetch" ? "ไม่สามารถเชื่อมต่อฐานข้อมูลได้ (โปรดเช็ค URL GAS)" : err.message,
+            confirmButtonColor: '#d33'
+        });
+    } finally {
+        // คืนค่าปุ่ม
+        btn.disabled = false;
+        text.classList.remove('d-none');
+        spinner.classList.add('d-none');
+    }
+}
 
         function loginSuccess(name, role) {
             document.getElementById('auth-layer').style.display = 'none';
