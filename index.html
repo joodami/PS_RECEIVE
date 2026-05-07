@@ -123,21 +123,25 @@
     let extraCount = 0;
 
     // 1. ดึงเลขรับล่าสุด (ใช้เทคนิค JSONP เพื่อเลี่ยงการติด CORS)
-    window.onload = () => {
-        const today = new Date();
-        document.getElementById('v_date').innerText = `วันที่: ${today.toLocaleDateString('th-TH')}`;
-        
-        // สร้าง Script Tag เพื่อไปดึงข้อมูลจาก GAS
-        const script = document.createElement('script');
-        script.src = `${WEB_APP_URL}?action=getNextNo&callback=setupForm`;
-        document.body.appendChild(script);
-    };
+window.onload = () => {
+    // 1. แสดงวันที่ปัจจุบัน
+    const today = new Date();
+    const dateOptions = { day: '2-digit', month: '2-digit', year: 'numeric' };
+    document.getElementById('v_date').innerText = `วันที่: ${today.toLocaleDateString('th-TH', dateOptions)}`;
 
-    // Callback function เมื่อดึงเลขรับสำเร็จ
-    function setupForm(data) {
-        document.getElementById('receiveNo').value = data.nextNo;
+    // 2. ดึงเลขรับ (ใช้ชื่อฟังก์ชัน 'setupForm' ไปตรงๆ เลยค่ะ)
+    const script = document.createElement('script');
+    script.src = `${WEB_APP_URL}?action=getNextNo&callback=setupForm`; 
+    document.body.appendChild(script);
+};
+
+// 3. ฟังก์ชันรับค่าจาก GAS (ต้องชื่อเดียวกับที่ส่งไปใน callback)
+function setupForm(data) {
+    if (data && data.nextNo) {
         document.getElementById('v_no').innerText = `รับที่: ${data.nextNo}/2569`;
+        document.getElementById('receiveNo').value = data.nextNo;
     }
+}
 
     // ฟังก์ชันเช็คความด่วนเพื่อเปลี่ยนสีตัวอักษร
     function checkUrgency() {
