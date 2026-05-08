@@ -252,12 +252,82 @@ async function handleLogin(event) {
             menu.innerHTML = html;
         }
 
-        function loadView(view, el) {
-            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-            el.classList.add('active');
-            document.getElementById('page-title').innerText = el.innerText;
-            document.getElementById('view-body').innerHTML = '<div class="p-5 text-center"><div class="spinner-border text-primary"></div><p class="mt-3">กำลังโหลดข้อมูล...</p></div>';
-        }
+     // 1. แก้ไขฟังก์ชัน loadView เดิม
+function loadView(view, el) {
+    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('page-title').innerText = el.innerText;
+    const viewBody = document.getElementById('view-body');
+
+    if (view === 'reg') {
+        viewBody.innerHTML = `
+            <form id="regForm" onsubmit="handleRegister(event)" class="row g-3 fs-6 text-dark">
+                <div class="col-md-6"><label class="form-label fw-bold">จากหน่วยงาน</label><input type="text" id="reg_from" class="form-control" required></div>
+                <div class="col-md-3"><label class="form-label fw-bold">ที่ (เลขที่หนังสือต้นทาง)</label><input type="text" id="reg_doc_num" class="form-control" required></div>
+                <div class="col-md-3"><label class="form-label fw-bold">ลงวันที่ (ต้นทาง)</label><input type="date" id="reg_doc_date" class="form-control" required></div>
+                <div class="col-12"><label class="form-label fw-bold">เรื่อง</label><input type="text" id="reg_subject" class="form-control" required></div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">หมายเหตุ (ความเร่งด่วน)</label>
+                    <select id="reg_priority" class="form-select text-danger fw-bold">
+                        <option value="ปกติ" class="text-dark">ปกติ</option>
+                        <option value="ด่วน">ด่วน</option>
+                        <option value="ด่วนมาก">ด่วนมาก</option>
+                        <option value="ด่วนที่สุด">ด่วนที่สุด</option>
+                    </select>
+                </div>
+                <div class="col-md-4">
+                    <label class="form-label fw-bold">ประทับตราดิจิทัล</label>
+                    <select id="reg_stamp" class="form-select">
+                        <option value="ประทับตรา">ประทับตรา</option>
+                        <option value="ไม่ประทับตรา">ไม่ประทับตรา</option>
+                    </select>
+                </div>
+                <div class="col-md-4"><label class="form-label fw-bold">ไฟล์ PDF</label><input type="file" id="reg_file" class="form-control" accept=".pdf" required></div>
+                <div class="col-12 text-center mt-4">
+                    <button type="submit" id="regBtn" class="btn btn-primary px-5 py-2 fw-bold"><i class="bi bi-save"></i> บันทึกข้อมูลและออกเลขรับ</button>
+                </div>
+            </form>`;
+    } else {
+        viewBody.innerHTML = '<div class="p-5 text-center text-muted"><p>ส่วนนี้กำลังอยู่ระหว่างการพัฒนาค่ะ</p></div>';
+    }
+}
+
+        // 2. เพิ่มฟังก์ชัน handleRegister (วางต่อท้าย loadView)
+async function handleRegister(event) {
+    event.preventDefault();
+    const btn = document.getElementById('regBtn');
+    const fileInput = document.getElementById('reg_file').files[0];
+    
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> กำลังบันทึก...';
+
+    const reader = new FileReader();
+    reader.readAsDataURL(fileInput);
+    reader.onload = async function () {
+        const base64Data = reader.result.split(',')[1];
+        const payload = {
+            action: 'register',
+            reg_from: document.getElementById('reg_from').value,
+            reg_doc_num: document.getElementById('reg_doc_num').value,
+            reg_doc_date: document.getElementById('reg_doc_date').value,
+            reg_subject: document.getElementById('reg_subject').value,
+            reg_priority: document.getElementById('reg_priority').value,
+            reg_stamp: document.getElementById('reg_stamp').value,
+            file_name: fileInput.name,
+            file_data: base64Data
+        };
+
+        try {
+            const response = await fetch(WEB_APP_URL, { method: "POST", body: JSON.stringify(payload) });
+            const result = await response.json();
+            if(result.success) {
+                Swal.fire('สำเร็จ!', `ออกเลขรับที่: ${result.recNum}`, 'success');
+                document.getElementById('regForm').reset();
+            } else { Swal.fire('Error', result.message, 'error'); }
+        } catch (err) { Swal.fire('Error', 'การเชื่อมต่อผิดพลาด', 'error'); }
+        finally { btn.disabled = false; btn.innerHTML = '<i class="bi bi-save"></i> บันทึกข้อมูลและออกเลขรับ'; }
+    };
+}
 
         document.getElementById('date-now').innerText = new Date().toLocaleDateString('th-TH', { day:'numeric', month:'long', year:'numeric' });
     </script>
