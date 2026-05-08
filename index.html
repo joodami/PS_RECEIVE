@@ -155,7 +155,7 @@
             document.getElementById('login-form-div').style.display = 'none';
         }
 
-       async function handleLogin(event) {
+async function handleLogin(event) {
     if (event) {
         event.preventDefault();
         event.stopPropagation();
@@ -177,7 +177,6 @@
     spinner.classList.remove('d-none');
 
     try {
-        // --- ปรับการส่งข้อมูลเป็นรูปแบบ URLSearchParams (เหมือนการส่ง Form ปกติ) ---
         const params = new URLSearchParams();
         params.append('action', 'login');
         params.append('user', userInput);
@@ -186,34 +185,42 @@
 
         const response = await fetch(WEB_APP_URL, {
             method: "POST",
-            mode: "cors", // เปิดโหมดข้ามโดเมน
+            mode: "cors",
             headers: {
-                "Content-Type": "application/x-www-form-urlencoded", // แจ้ง GAS ว่านี่คือฟอร์มนะ
+                "Content-Type": "application/x-www-form-urlencoded",
             },
             body: params.toString()
         });
 
-        if (!response.ok) throw new Error('Network response was not ok (404/500)');
+        if (!response.ok) throw new Error('Network response was not ok');
 
         const result = await response.json();
 
         if (result.success) {
-            Swal.fire({ 
-                icon: 'success', 
-                title: 'สำเร็จ', 
-                text: 'ยินดีต้อนรับคุณ ' + result.name, 
-                timer: 1500, 
-                showConfirmButton: false 
-            }).then(() => {
-                loginSuccess(result.name, result.role);
+            // สั่งเปลี่ยนหน้าทันทีเพื่อความรวดเร็ว
+            loginSuccess(result.name, result.role);
+
+            // แจ้งเตือนแบบ Toast มุมขวาบน ไม่ขัดจังหวะการทำงาน
+            const Toast = Swal.mixin({
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 2000,
+                timerProgressBar: true
+            });
+            
+            Toast.fire({
+                icon: 'success',
+                title: 'เข้าสู่ระบบสำเร็จ'
             });
         } else {
             Swal.fire('ล้มเหลว', result.message || 'ข้อมูลไม่ถูกต้อง', 'error');
         }
     } catch (err) {
-        console.error("Fetch Error Details:", err);
-        Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Server ได้ (404 Not Found) <br><br> กรุณาเช็ค WEB_APP_URL ในโค้ดว่าตรงกับลิงก์ /exec ล่าสุดหรือไม่', 'error');
+        console.error("Fetch Error:", err);
+        Swal.fire('Error', 'ไม่สามารถเชื่อมต่อ Server ได้', 'error');
     } finally {
+        // คืนค่าปุ่มให้กดได้ปกติกรณีเกิด Error หรือ Login ไม่ผ่าน
         btn.disabled = false;
         text.classList.remove('d-none');
         spinner.classList.add('d-none');
